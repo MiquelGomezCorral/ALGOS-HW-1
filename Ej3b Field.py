@@ -2,6 +2,12 @@ import random
 
 def finite_field(x, p):
     return x % p
+def divide_field(x, y, p): #x / y
+    y_inv = 1
+    while finite_field(y * y_inv, p) != 1:
+        y_inv += 1
+    
+    return finite_field(x * y_inv, p)
     
 def is_prime(num):
     if num <= 1:
@@ -44,7 +50,7 @@ def compute_h(y, x, n, VXC, p):
 def determinant(matrix, p):
     # Base case: if the matrix is 1x1, return the single element
     if len(matrix) == 1:
-        return matrix[0][0]
+        return finite_field(matrix[0][0], p)
     
     # Base case: if the matrix is 2x2, return ad - bc
     if len(matrix) == 2:
@@ -69,7 +75,7 @@ def gaussian_elimination(A, b, p):
     for i in range(n):
         # Pivoting
         for j in range(i + 1, n):
-            factor = A[j][i] / A[i][i]
+            factor = divide_field(A[j][i], A[i][i], p)
             for k in range(i, n):
                 mult1 = finite_field(factor * A[i][k], p)
                 A[j][k] = finite_field(A[j][k] - mult1, p)
@@ -80,47 +86,21 @@ def gaussian_elimination(A, b, p):
     # Back substitution
     x = [0] * n
     for i in range(n - 1, -1, -1):
-        x[i] = finite_field(b[i] / A[i][i], p)
+        x[i] = divide_field(b[i], A[i][i], p)
         for j in range(i - 1, -1, -1):
             mult1 = finite_field(A[j][i] * x[i], p)
             b[j] = finite_field(b[j] - mult1, p)
     return x
 
 
-def has_solution():
-    """ READ LINES """
-    # parameters = input()
-    parameters = lines[0]
-    numbers = parameters.split(' ')
-
-    n = int(numbers[0]) # Volunteer & Cities
-    m = int(numbers[1]) # Preferences
-    b = int(numbers[2]) # Badget
-    t = int(numbers[3]) # Cost Train
-    c = int(numbers[4]) # Cost Car
-
-    VXC = []
-    for i in range(n): 
-        VXC.append([])
-        for j in range(n):
-                VXC[i].append(-1) 
-
-    for idx in range(1,m+1): 
-        # preference = input()
-        preference = lines[idx]
-        numbers = preference.split(' ')
-        i = int(numbers[0])
-        j = int(numbers[1])
-        cost = int(numbers[2])
-        VXC[i][j] = cost
-    
+def has_solution(n, m, b, t, c, VXC): 
     """ INITIAL CHECK """
     if (
         (m < n) or 
         (t* n < b) or 
         (t % 2 == 0 and c % 2 == 0 and b % 2 == 1)  # t & c even & b odd -> no
     ): 
-        print("no"); return
+        return False
         
     
     """" COMPUTE STUFF """
@@ -144,52 +124,87 @@ def has_solution():
     for j, y in enumerate(Y):
         P.append([])
         for i in range(len(Y)):
-            P[j].append((y**i) % size_p)
+            P[j].append(finite_field((y**i), size_p))
             
     c = gaussian_elimination(P, s, size_p)
     
-    has = (c[b+1] % size_p) != 0
+    has = (c[b] % size_p) != 0
     #print("yes" if has else "no")
     return has
 
 
 
+""" READ LINES """
+parameters = input()
+# parameters = lines[0]
+numbers = parameters.split(' ')
 
+n = int(numbers[0]) # Volunteer & Cities
+m = int(numbers[1]) # Preferences
+b = int(numbers[2]) # Badget
+t = int(numbers[3]) # Cost Train
+c = int(numbers[4]) # Cost Car
+
+VXC = []
+for i in range(n): 
+    VXC.append([])
+    for j in range(n):
+            VXC[i].append(-1) 
+
+for idx in range(1,m+1): 
+    preference = input()
+    # preference = lines[idx]
+    numbers = preference.split(' ')
+    i = int(numbers[0])
+    j = int(numbers[1])
+    cost = int(numbers[2])
+    VXC[i][j] = cost
+
+has = False
+for t in range(20):
+    if has_solution(n, m, b, t, c, VXC):
+        print("yes")
+        has = True
+        break
+if not has: 
+    print("no")
+
+  
     
     
-for test in range(3):
-    yes_n = 0
-    print(f"{test = }")
-    if test == 0:
-        lines = [
-            "3 6 7 3 1",
-            "0 0 1",
-            "1 1 3",
-            "2 2 1",
-            "1 0 3",
-            "0 2 3",
-            "2 1 1",
-        ]
-    elif test == 1:
-        lines = [
-            "3 6 7 3 1",
-            "0 0 3",
-            "1 1 3",
-            "2 2 3",
-            "0 1 3",
-            "1 2 1",
-            "2 0 1",
-        ]
-    elif test == 2:
-        lines = [
-        "2 2 7 5 3",
-        "0 0 3",
-        "1 1 5",   
-    ]
+# for test in range(3):
+#     yes_n = 0
+#     print(f"{test = }")
+#     if test == 0:
+#         lines = [
+#             "3 6 7 3 1",
+#             "0 0 1",
+#             "1 1 3",
+#             "2 2 1",
+#             "1 0 3",
+#             "0 2 3",
+#             "2 1 1",
+#         ]
+#     elif test == 1:
+#         lines = [
+#             "3 6 7 3 1",
+#             "0 0 3",
+#             "1 1 3",
+#             "2 2 3",
+#             "0 1 3",
+#             "1 2 1",
+#             "2 0 1",
+#         ]
+#     elif test == 2:
+#         lines = [
+#         "2 2 7 5 3",
+#         "0 0 3",
+#         "1 1 5",   
+#     ]
     
-    for iterations in range(1,10001):
-        if has_solution():
-            yes_n+=1
+#     for iterations in range(1,10001):
+#         if has_solution():
+#             yes_n+=1
         
-        if iterations % 2500 == 0:
-            print(f"YES PROPORTION: {yes_n*100 / iterations:.4}%")
+#         if iterations % 2500 == 0:
+#             print(f"YES PROPORTION: {yes_n*100 / iterations:.4}%")
