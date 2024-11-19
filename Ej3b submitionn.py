@@ -48,50 +48,79 @@ def compute_h(y, x, n, VXC, p):
     return H
                 
 def determinant(matrix, p):
-    # Base case: if the matrix is 1x1, return the single element
-    if len(matrix) == 1:
+    n = len(matrix)
+    if n == 1:
         return finite_field(matrix[0][0], p)
-    
-    # Base case: if the matrix is 2x2, return ad - bc
-    if len(matrix) == 2:
-        return (finite_field(matrix[0][0] * matrix[1][1], p) - 
-                finite_field(matrix[0][1] * matrix[1][0], p))
 
-    # Recursive case: expand along the first row
-    det = 0
-    for col in range(len(matrix)):
-        # Create a submatrix by excluding the current row and column
-        submatrix = [row[:col] + row[col+1:] for row in matrix[1:]]
-        # Add or subtract the determinant of the submatrix
-        mult1 = finite_field(matrix[0][col] * determinant(submatrix, p), p)
-        mult2 = finite_field(((-1) ** col) * mult1, p)
-        det = finite_field(det + mult2, p)
-    
-    return det
+    det = 1  # Initialize determinant
+    for i in range(n):
+        # Find pivot element to avoid dividing by zero
+        pivot = i
+        while pivot < n and finite_field(matrix[pivot][i], p) == 0:
+            pivot += 1
 
-def gaussian_elimination(A, b, p):
+        # If no non-zero pivot found, determinant is zero
+        if pivot == n:
+            return 0
+
+        # Swap rows if needed
+        if pivot != i:
+            matrix[i], matrix[pivot] = matrix[pivot], matrix[i]
+            det = finite_field(-det, p)  # Swapping rows flips the sign of determinant
+
+        # Scale the current row to make pivot 1
+        pivot_value = matrix[i][i]
+        det = finite_field(det * pivot_value, p)
+        pivot_inv = divide_field(1, pivot_value, p)
+        for j in range(i, n):
+            matrix[i][j] = finite_field(matrix[i][j] * pivot_inv, p)
+
+        # Eliminate entries below the pivot
+        for k in range(i + 1, n):
+            factor = matrix[k][i]
+            for j in range(i, n):
+                matrix[k][j] = finite_field(matrix[k][j] - factor * matrix[i][j], p)
+
+    # The determinant is the product of the diagonal elements
+    return finite_field(det, p)
+
+def gaussian_elimination(A, b, p, inportant_index):
     n = len(b)
     # Forward elimination
     for i in range(n):
-        # Pivoting
+        # Pivoting: Ensure A[i][i] is non-zero by swapping rows if needed
+        if A[i][i] == 0:
+            for j in range(i + 1, n):
+                if A[j][i] != 0:
+                    A[i], A[j] = A[j], A[i]  # Swap rows
+                    b[i], b[j] = b[j], b[i]
+                    break
+            else:
+                raise ValueError("Matrix is singular or not solvable in mod p")
+
+        # Normalize the pivot row
+        pivot_inv = divide_field(1, A[i][i], p)
+        for k in range(i, n):
+            A[i][k] = finite_field(A[i][k] * pivot_inv, p)
+        b[i] = finite_field(b[i] * pivot_inv, p)
+
+        # Eliminate entries below the pivot
         for j in range(i + 1, n):
-            factor = divide_field(A[j][i], A[i][i], p)
+            factor = A[j][i]
             for k in range(i, n):
-                mult1 = finite_field(factor * A[i][k], p)
-                A[j][k] = finite_field(A[j][k] - mult1, p)
-                
-            mult1 = finite_field(factor * b[i], p)
-            b[j] = finite_field(b[j] - mult1, p)
+                A[j][k] = finite_field(A[j][k] - factor * A[i][k], p)
+            b[j] = finite_field(b[j] - factor * b[i], p)
 
     # Back substitution
     x = [0] * n
     for i in range(n - 1, -1, -1):
-        x[i] = divide_field(b[i], A[i][i], p)
-        for j in range(i - 1, -1, -1):
-            mult1 = finite_field(A[j][i] * x[i], p)
-            b[j] = finite_field(b[j] - mult1, p)
+        x[i] = b[i]
+        for j in range(i + 1, n):
+            x[i] = finite_field(x[i] - A[i][j] * x[j], p)
+        if i == inportant_index:
+            break
+    
     return x
-
 
 def has_solution(n, m, b, t, c, VXC, size_p, F): 
     """ INITIAL CHECK """
@@ -121,7 +150,7 @@ def has_solution(n, m, b, t, c, VXC, size_p, F):
         for i in range(len(Y)):
             P[j].append(finite_field((y**i), size_p))
             
-    c = gaussian_elimination(P, s, size_p)
+    c = gaussian_elimination(P, s, size_p, b)
     
     has = (c[b] % size_p) != 0
     return has
@@ -160,7 +189,7 @@ size_p = next_prime(size_max)
 F = list(range(size_p))
 
 has = False
-for _ in range(20):
+for _ in range(1):
     if has_solution(n, m, b, t, c, VXC, size_p, F):
         print("yes")
         has = True

@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.Arrays;
 
 public class FiniteFieldSolver {
 
@@ -143,18 +145,35 @@ public class FiniteFieldSolver {
 
     // Main method
     public static void main(String[] args) {
-        // Example input
-        int n = 3;
-        int m = 6;
-        int b = 7;
-        int t = 3;
-        int c = 1;
+        Scanner scanner = new Scanner(System.in);
 
-        int[][] VXC = {
-            {-1, -1, -1},
-            {-1, -1, -1},
-            {-1, -1, -1}
-        };
+        // Read the parameters
+        String parameters = scanner.nextLine();
+        String[] numbers = parameters.split(" ");
+
+        int n = Integer.parseInt(numbers[0]); // Volunteers & Cities
+        int m = Integer.parseInt(numbers[1]); // Preferences
+        int b = Integer.parseInt(numbers[2]); // Budget
+        int t = Integer.parseInt(numbers[3]); // Cost of Train
+        int c = Integer.parseInt(numbers[4]); // Cost of Car
+
+        // Initialize the VXC matrix with -1
+        int[][] VXC = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(VXC[i], -1);
+        }
+
+        // Read preferences and populate the VXC matrix
+        for (int idx = 0; idx < m; idx++) {
+            String preference = scanner.nextLine();
+            String[] preferenceNumbers = preference.split(" ");
+            int i = Integer.parseInt(preferenceNumbers[0]);
+            int j = Integer.parseInt(preferenceNumbers[1]);
+            int cost = Integer.parseInt(preferenceNumbers[2]);
+            VXC[i][j] = cost;
+        }
+
+        scanner.close();
 
         int sizeMax = Math.max(t * n, n * n);
         int sizeP = nextPrime(sizeMax);
