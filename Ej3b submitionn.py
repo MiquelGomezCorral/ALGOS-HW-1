@@ -1,13 +1,29 @@
 import random 
+import functools
+
 
 def finite_field(x, p):
     return x % p
-def divide_field(x, y, p): #x / y
-    y_inv = 1
-    while finite_field(y * y_inv, p) != 1:
-        y_inv += 1
-    
-    return finite_field(x * y_inv, p)
+@functools.cache
+def mod_inverse(a, p):
+    m0 = p
+    x0, x1 = 0, 1
+    while a > 1:
+        q = a // p
+        t = p
+        p = a % p
+        a = t
+        t = x0
+        x0 = x1 - q * x0
+        x1 = t
+    if x1 < 0:
+        x1 += m0
+    return x1
+
+def divide_field(x, y, p):
+    """Performs modular division x / y mod p."""
+    y_inv = mod_inverse(y, p)  # Find modular inverse of y mod p
+    return finite_field(x * y_inv, p)  # Compute x / y mod p
     
 def is_prime(num):
     if num <= 1:
@@ -174,6 +190,7 @@ for i in range(n):
     for j in range(n):
             VXC[i].append(-1) 
 
+preferences_save = []
 for idx in range(1,m+1): 
     preference = input()
     # preference = lines[idx]
@@ -182,6 +199,28 @@ for idx in range(1,m+1):
     j = int(numbers[1])
     cost = int(numbers[2])
     VXC[i][j] = cost
+    preferences_save.append((i,j,cost))
+    
+temp = b - c * n
+if temp < 0 or temp % (t - c) != 0:
+    print("no")
+    exit(0)
+t_count = temp // (t - c)
+c_count = n - t_count
+if t_count > n:
+    print("no")
+    exit(0)
+
+# Step 0.5.2: reduce edge weights to 1, 2
+for (i,j,cost) in preferences_save:
+    if cost == t:
+        VXC[i][j] = 2
+    else:
+        VXC[i][j] = 1
+
+b = t_count *  2 + c_count * 1
+t = 2
+c = 1
 
 size_max = max(t*n, n*n)
 size_p = next_prime(size_max)
