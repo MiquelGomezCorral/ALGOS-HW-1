@@ -20,12 +20,15 @@ def read_second_line():
     z = [int(i) for i in line.split(" ")]
     return z
 
-def query(q, rem_q):
+def query(q):
+    global rem_q
+    rem_q -= 1
+    
     print(f'q {" ".join(map(str, q))}')
     line = input().split(" ")
     m = int(line[0])
     p = [int(i) for i in line[1:]]
-    return m, p, rem_q - 1
+    return m, p
     
 def print_q_star(q):
     print(f'* {" ".join(map(str, q))}')
@@ -55,13 +58,13 @@ def get_m(z, q):
     d = len(z)
     return [i for i in range(d) if z[i] == q[i]]
     
-def find_j_div(q, I, w, rem_q):
+def find_j_div(q, I, w):
     ini, end = 0, w
     mid = w // 2
     
     while ini <= end and rem_q > 1:
         uj = get_uj(q, I, mid)
-        m, p, rem_q = query(uj, rem_q)
+        m, p = query(uj)
         if m == 1: # return _|_
             end = mid - 1
         else: ini = mid + 1 # return z
@@ -69,14 +72,14 @@ def find_j_div(q, I, w, rem_q):
         
     return mid
 
-def find_j(q, I, w, rem_q):
-    for i in range(1, w):
-        uj = get_uj(q, I, i)
-        m, p, rem_q = query(uj, rem_q)
+def find_j(q, I, w):
+    for j in range(1, w):
+        uj = get_uj(q, I, j)
+        m, p = query(uj)
         if m == 1 or rem_q <= 1:
-            return i-1
+            return j-1
         
-    return w, rem_q
+    return w
          
 def get_uj(q, I, j):
     uj = list(q)
@@ -107,7 +110,7 @@ while rem_q > 1:
     dist_q_z = dist_1(q,z) 
     
     while rem_q > 1 and dist_q_z < r:
-        m, p, rem_q = query(q, rem_q)
+        m, p = query(q)
         if m == 1: # m = d or 1 bc d >= 10
             print_q_star(q)
             
@@ -116,7 +119,7 @@ while rem_q > 1:
         # I = random.sample(M, w)
         I = sorted(random.sample(M, w))
         
-        j, rem_q = find_j(q, I, w, rem_q)
+        j = find_j(q, I, w)
         update_q(q,j)
         dist_q_z = dist_1(q,z) 
     
