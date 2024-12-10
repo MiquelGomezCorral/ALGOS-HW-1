@@ -4,6 +4,7 @@
 
 import math
 import random
+from grinch import OfflineANNS 
 
 """ 
 ################################
@@ -20,18 +21,18 @@ def read_second_line():
     z = [int(i) for i in line.split(" ")]
     return z
 
-def query(q):
+def query(q, ds):
     global N
     N -= 1
     
-    print(f'q {" ".join(map(str, q))}')
-    line = input().split(" ")
-    m = int(line[0])
-    p = [int(i) for i in line[1:]]
-    return m, p
+    a = ds.query(q)
+    print(f'q {" ".join(map(str, q))}, {N = }, {a = }')
+    return a
+
     
-def print_q_star(q):
+def print_q_star(q, ds):
     print(f'* {" ".join(map(str, q))}')
+    print(ds.query(q))
     exit()
     
     
@@ -59,25 +60,25 @@ def get_m(z, q):
     d = len(z)
     return [i for i in range(d) if q[i] == z[i]]
     
-def find_j_div(q, I, w):
+def find_j_div(q, I, w, ds):
     ini, end = 0, w
     mid = w // 2
     
     while ini <= end and N > 1:
         uj = get_uj(q, I, mid)
-        m, p = query(uj)
-        if p[0] == -1: # return _|_
+        a = query(uj, ds)
+        if a[0] == -1: # return _|_
             end = mid - 1
         else: ini = mid + 1 # return z
         mid = (ini + end) // 2
         
     return mid
 
-def find_j(q, I, w):
+def find_j(q, I, w, ds):
     for j in range(1, w+1):
         uj = get_uj(q, I, j)
-        m, p = query(uj)
-        if p[0] == -1 or N == 0:
+        a = query(uj, ds)
+        if a[0] == -1 or N <= 1:
             return j-1
         
     return w-1
@@ -98,7 +99,9 @@ def update_q(q, j):
          EXECUTION
 ################################
 """ 
-def algorithm(d, r, c, n, z):
+
+
+def algorithm(d, r, c, n, z, ds):
     mu = min(
         r,
         math.ceil(2*math.e*math.e * (math.log(n)+1))
@@ -106,31 +109,35 @@ def algorithm(d, r, c, n, z):
     while N > 0:
         q = sample_q(z, r, mu, d)
         dist_q_z = dist_1(q,z) 
+        print(f"\nNEW Q: {q}")
         
         while N > 0 and dist_q_z < r:
-            m, p = query(q)
-            if p[0] == -1: # first coordinate is -1 -> not found
-                print_q_star(q)
+            print(f"UPDATED Q: {q}")
+            a = query(q, ds)
+            if a[0] == -1: # first coordinate is -1 -> not found
+                print_q_star(q, ds)
                 
             M = get_m(z,q)
             w = math.ceil(c*r) + 1 - dist_q_z
             # I = random.sample(M, w)
             I = sorted(random.sample(M, w))
-
-            j = find_j(q, I, w)
+            
+            j = find_j(q, I, w, ds)
             
             update_q(q,I[j])
             dist_q_z = dist_1(q,z) 
-        # End while
+            print(f"{dist_q_z = }, {j = }")
+        # End while 
         
         if N > 0 and dist_q_z <= r:
-            m, p = query(q)
-            if p[0] == -1: # first coordinate is -1 -> not found
-                print_q_star(q)
+            a = query(q, ds)
+            if a[0] == -1: # first coordinate is -1 -> not found
+                print_q_star(q, ds)
         
-    print_q_star(q)
+    print_q_star(q, ds)
     
 d, r, c, n, N = read_first_line()
 z = read_second_line()
 
-algorithm(d, r, c, n, z)
+ds = OfflineANNS(d, r, c, n, z)
+algorithm(d, r, c, n, z, ds)

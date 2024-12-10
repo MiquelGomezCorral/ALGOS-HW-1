@@ -62,20 +62,20 @@ def get_m(z, q, d):
 def update_q(q, j):
     q[j] = 1 - q[j]
     
-r = 2
+r = 3
 c = 1.5
-z = [0,1,0,1,0,1,0,1,0,1,1]
+z = [0,1,0,1,0,1,0,1,0,1,0]
 for i in range(10):
     q = sample_q(z,r*2,r,len(z))
     
     print(f"{q = }")
-    print(f"{z = }")
-    update_q(q, 1)
+    # print(f"{z = }")
+    update_q(q, i)
     print(f"{q = }")
-    # print(f"uj= {get_uj(q, get_m(z, q, len(q)), len(z))}")
+    # # print(f"uj= {get_uj(q, get_m(z, q, len(q)), len(z))}")
     dist_q_z = dist(q,z)
     print(f"{dist_q_z = }")
-    # print(f"{query(q) = }")
+    # # print(f"{query(q) = }")
     
     M = get_m(z,q,len(z))
     w = math.ceil(c*r) + 1 - dist_q_z
