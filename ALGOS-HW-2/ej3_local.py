@@ -61,7 +61,7 @@ def get_m(z, q):
     return [i for i in range(d) if q[i] == z[i]]
     
 def find_j_div(q, I, w, ds):
-    ini, end = 0, w
+    ini, end = 0, w-1
     mid = w // 2
     
     while ini <= end and N > 1:
@@ -72,9 +72,10 @@ def find_j_div(q, I, w, ds):
         else: ini = mid + 1 # return z
         mid = (ini + end) // 2
         
-    return mid
+    return mid + 1 if mid + 1 < len(I) else mid
 
 def find_j(q, I, w, ds):
+    print(f"{w = }, {len(I) = }")
     for j in range(1, w+1):
         uj = get_uj(q, I, j)
         a = query(uj, ds)
@@ -106,6 +107,7 @@ def algorithm(d, r, c, n, z, ds):
         r,
         math.ceil(2*math.e*math.e * (math.log(n)+1))
     )
+    print(f"{mu = }")
     while N > 0:
         q = sample_q(z, r, mu, d)
         dist_q_z = dist_1(q,z) 
@@ -138,6 +140,7 @@ def algorithm(d, r, c, n, z, ds):
     
 d, r, c, n, N = read_first_line()
 z = read_second_line()
+print(d, r, c, n, N, z)
 
 ds = OfflineANNS(d, r, c, n, z)
 algorithm(d, r, c, n, z, ds)

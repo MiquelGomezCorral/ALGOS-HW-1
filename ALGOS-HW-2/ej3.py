@@ -60,7 +60,7 @@ def get_m(z, q):
     return [i for i in range(d) if q[i] == z[i]]
     
 def find_j_div(q, I, w):
-    ini, end = 0, w
+    ini, end = 0, w-1
     mid = w // 2
     
     while ini <= end and N > 1:
@@ -71,14 +71,14 @@ def find_j_div(q, I, w):
         else: ini = mid + 1 # return z
         mid = (ini + end) // 2
         
-    return mid
+    return mid + 1 if mid + 1 < len(I) else mid
 
 def find_j(q, I, w):
     for j in range(1, w+1):
         uj = get_uj(q, I, j)
         m, p = query(uj)
-        if p[0] == -1 or N == 0:
-            return j-1
+        if p[0] == -1 or N <= 1:
+            return j - 1
         
     return w-1
          
