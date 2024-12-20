@@ -32,6 +32,8 @@ def sample_q(p, d):
     for i in random.sample(range(len(p)), d):
         x[i] = 1 - x[i]
     
+    print(p)
+    print(x)
     return x
 
 def query(q):
@@ -64,42 +66,42 @@ def update_q(q, j):
     
 r = 3
 c = 2
-z = [1,1,1] 
+z = [1,1,1,1,1,1,1] 
 aux = f"* {" ".join(map(str, z))}"
 aux = f"q {" ".join(map(str, z))}"
 print(aux)
 print(len(aux))
 
-# for i in range(6):
-#     # q = sample_q(z,r*2,r,len(z))
-#     q = sample_q(z, dist)
+for i in range(6):
+    # q = sample_q(z,r*2,r,len(z))
+    q = sample_q(z, 4)
     
-#     # a = f'* {" ".join(map(str, q))}'
-#     a = f'q {" ".join(map(str, q))}'
-#     print(a)
+    # a = f'* {" ".join(map(str, q))}'
+    a = f'q {" ".join(map(str, q))}'
+    print(a)
     
+    print(f"{q = }")
+    dist_q_z = dist(q,z)
+    print(f"{dist_q_z = }")
+    M = get_m(z,q)
+    print(f"{M = }")
+    
+    
+    # # print(f"{z = }")
+    # update_q(q, i)
     # print(f"{q = }")
+    # # # print(f"uj= {get_uj(q, get_m(z, q, len(q)), len(z))}")
     # dist_q_z = dist(q,z)
     # print(f"{dist_q_z = }")
+    # # # print(f"{query(q) = }")
+    
     # M = get_m(z,q)
     # print(f"{M = }")
-    
-    
-    # # # print(f"{z = }")
-    # # update_q(q, i)
-    # # print(f"{q = }")
-    # # # # print(f"uj= {get_uj(q, get_m(z, q, len(q)), len(z))}")
-    # # dist_q_z = dist(q,z)
-    # # print(f"{dist_q_z = }")
-    # # # # print(f"{query(q) = }")
-    
-    # # M = get_m(z,q)
-    # # print(f"{M = }")
-    # w = math.ceil(c*r) + 1 - dist_q_z
-    # I = sorted(random.sample(M, w))
-    # print(f"{I = }")
-    # for j in range(1, w+1):
-    #     uj = get_uj(q, I, j)
-    #     print(f"{j = } {uj = }")        
+    w = math.ceil(c*r) + 1 - dist_q_z
+    I = sorted(random.sample(M, w))
+    print(f"{I = }")
+    for j in range(1, w+1):
+        uj = get_uj(q, I, j)
+        print(f"{j = } {uj = }")        
     
     

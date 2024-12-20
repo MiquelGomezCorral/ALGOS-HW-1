@@ -1,6 +1,8 @@
 import math
 import random
-from grinch import OfflineANNS 
+# from grinch import OfflineANNS 
+from ej3 import OfflineANNS
+
 
 def read_first_line():
     line = input()
